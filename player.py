@@ -1,6 +1,7 @@
 import random
 
 import pygame
+import numpy as np
 from variables import global_variables
 from nn import NeuralNetwork
 
@@ -35,8 +36,40 @@ class Player(pygame.sprite.Sprite):
         if self.game_mode == "Neuroevolution":
             self.fitness = 0  # Initial fitness
 
-            layer_sizes = [3, 10, 2]  # TODO (Design your architecture here by changing the values)
+            layer_sizes = [8, 10, 2]  # TODO (Design your architecture here by changing the values)
             self.nn = NeuralNetwork(layer_sizes)
+
+
+
+    def create_input(self, screen_width, screen_height, obstacles, player_x, player_y):
+        """
+        Creates input vector of the neural network based on the location of obstacles.
+        The size of input vector is 8.
+        :return: created vector
+        """
+        input = []
+        for i in range(3):
+            try:
+                x = obstacles[i]['x']
+                y = obstacles[i]['y']
+                if -50 < x < screen_width:
+                    input.append(x)
+                else:
+                    input.append(screen_width / 2)
+                if -50 < y < screen_height:
+                    input.append(y)
+                else:
+                    input.append(screen_height / 2)
+            except:
+                input.append(screen_width / 2)
+                input.append(screen_width / 2)
+
+        input.append(player_x)
+        input.append(player_y)
+
+        input_norm = [float(i) / sum(input) for i in input]
+
+        return input_norm
 
     def think(self, screen_width, screen_height, obstacles, player_x, player_y):
         """
@@ -53,11 +86,18 @@ class Player(pygame.sprite.Sprite):
         """
         # TODO (change player's gravity here by calling self.change_gravity)
 
-        # This is a test code that changes the gravity based on a random number. Remove it before your implementation.
-        if random.randint(0, 2):
+        input = self.create_input(screen_width, screen_height, obstacles, player_x, player_y)
+
+        output = self.nn.forward(np.array(input).reshape(len(input), 1))
+
+        # Update gravity based of output of NN
+        if output[0] > 0.5:
             self.change_gravity('left')
-        else:
+        elif output[1] > 0.5:
             self.change_gravity('right')
+        # else:
+        #     self.change_gravity(self.player_gravity)
+
 
     def change_gravity(self, new_gravity):
         """
