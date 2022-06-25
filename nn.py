@@ -11,16 +11,33 @@ class NeuralNetwork:
         3 neurons in the input layer, 10 neurons in the hidden layer, and 2 neurons in the output layer.
         """
         # TODO (Implement FCNNs architecture here)
-        pass
+        self.w = []
+        self.b = []
+        center = 0
+        margin = 1
 
-    def activation(self, x):
+        # allocate random normal W matrix and zero b vector for each layer.
+        for i in range(1, len(layer_sizes)):
+            # draw random samples from a normal (Gaussian) distribution
+            w = np.random.normal(center, margin, size=(layer_sizes[i], layer_sizes[i - 1]))
+            self.w.append(w)
+            # zero bias vector
+            b = np.zeros((layer_sizes[i], 1))
+            self.b.append(b)
+
+
+    def activation(self, x, activation_function="sigmoid"):
         """
         The activation function of our neural network, e.g., Sigmoid, ReLU.
         :param x: Vector of a layer in our network.
         :return: Vector after applying activation function.
         """
         # TODO (Implement activation function here)
-        pass
+        if activation_function == "ReLU":
+            return max(0, x)
+        else:
+            return 1 / (1 + np.exp(-x))
+
 
     def forward(self, x):
         """
@@ -29,4 +46,8 @@ class NeuralNetwork:
         :return: Output vector
         """
         # TODO (Implement forward function here)
-        pass
+
+        for i in range(len(self.w)):
+            x = self.activation(self.w[i] @ x + self.b[i])
+        return x
+
