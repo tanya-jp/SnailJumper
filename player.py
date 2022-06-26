@@ -39,7 +39,7 @@ class Player(pygame.sprite.Sprite):
 
             # input layer
             # self.layer_sizes[0] must be even
-            self.layer_sizes.append(10)
+            self.layer_sizes.append(8)
             # hidden layer
             self.layer_sizes.append(32)
             # output layer

@@ -13,7 +13,6 @@ class Evolution:
         """
         Gets list of previous and current players (μ + λ) and returns num_players number of players based on their
         fitness value.
-
         :param players: list of players in the previous generation
         :param num_players: number of players that we return
         """
@@ -22,14 +21,13 @@ class Evolution:
         # TODO (Additional: Implement roulette wheel here)
         # self.roulette_wheel(sorted_players, num_players)
         # TODO (Additional: Implement SUS here)
-        self.sus(sorted_players, num_players)
+        generated_players = self.sus(sorted_players, num_players)
         # TODO (Additional: Learning curve)
-        return sorted_players[: num_players]
+        return generated_players[: num_players]
 
     def generate_new_population(self, num_players, prev_players=None):
         """
         Gets survivors and returns a list containing num_players number of children.
-
         :param num_players: Length of returning list
         :param prev_players: List of survivors
         :return: A list of children
