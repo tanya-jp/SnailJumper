@@ -21,8 +21,11 @@ class Evolution:
         # TODO (Additional: Implement roulette wheel here)
         generated_players = self.sus_rw(sorted_players, num_players, "rw")
         # TODO (Additional: Implement SUS here)
-        # generated_players = self.sus(sorted_players, num_players)
+        # generated_players = self.sus_rw(sorted_players, num_players, "sus")
         # TODO (Additional: Learning curve)
+        # generated_players = self.q_tournament(sorted_players, num_players, 70)
+
+        # print(sorted_players[0].fitness)
         return generated_players[: num_players]
 
     def generate_new_population(self, num_players, prev_players=None):
@@ -38,8 +41,13 @@ class Evolution:
         else:
             # TODO ( Parent selection and child generation )
             # new_players = prev_players  # DELETE THIS AFTER YOUR IMPLEMENTATION
-            new_players = self.crossover_players(prev_players)
-            return new_players
+            # new_players = self.crossover_players(prev_players)
+            new_players = self.sus_rw(prev_players, num_players, "sus")
+            # new_players = self.q_tournament(prev_players, num_players, 30)
+            # new_players = self.sus_rw(prev_players, num_players, "rw")
+            parents = self.crossover_players(new_players)
+            # new_players = prev_players
+            return parents
 
     def crossover_players(self, prev_players):
         """
@@ -105,4 +113,18 @@ class Evolution:
                 if probabilities[i][0] <= p < probabilities[i][1]:
                     next_generation.append(self.clone_player(players[i]))
                     break
+        return next_generation
+
+    def q_tournament(self, players, num_players, q):
+        next_generation = []
+
+        for i in range(num_players):
+            pointers = [random.randint(0, len(players)-1) for i in range(q)]
+            fitness = {}
+            for point in pointers:
+                fitness[point] = players[point].fitness
+            max_fitness = max(fitness, key=fitness.get)
+            next_generation.append(self.clone_player(players[max_fitness]))
+
+
         return next_generation
