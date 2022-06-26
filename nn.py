@@ -35,6 +35,8 @@ class NeuralNetwork:
         # TODO (Implement activation function here)
         if activation_function == "ReLU":
             return max(0, x)
+        elif activation_function == "softmax":
+            return np.exp(x) / np.exp(x).sum()
         else:
             return 1 / (1 + np.exp(-x))
 
@@ -48,6 +50,6 @@ class NeuralNetwork:
         # TODO (Implement forward function here)
 
         for i in range(len(self.w)):
-            x = self.activation(self.w[i] @ x + self.b[i])
+            x = self.activation(self.w[i] @ x + self.b[i], "softmax")
         return x
 
