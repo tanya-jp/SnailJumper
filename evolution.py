@@ -19,9 +19,9 @@ class Evolution:
         # TODO (Implement top-k algorithm here)
         sorted_players = sorted(players, key=lambda player: player.fitness, reverse=True)
         # TODO (Additional: Implement roulette wheel here)
-        # self.roulette_wheel(sorted_players, num_players)
+        generated_players = self.sus_rw(sorted_players, num_players, "rw")
         # TODO (Additional: Implement SUS here)
-        generated_players = self.sus(sorted_players, num_players)
+        # generated_players = self.sus(sorted_players, num_players)
         # TODO (Additional: Learning curve)
         return generated_players[: num_players]
 
@@ -79,17 +79,7 @@ class Evolution:
         new_player.fitness = player.fitness
         return new_player
 
-    def roulette_wheel(self, players, num_player):
-        next_generation = []
-        total_fits = sum([player.fitness for player in players])
-        probabilities = [player.fitness / total_fits for player in players]
-        for i in range(num_player):
-            chosen = np.random.choice(players, 1, p=probabilities)
-            next_generation.append(chosen)
-
-        return next_generation
-
-    def sus(self, players, num_players):
+    def sus_rw(self, players, num_players, g_type="sus"):
         next_generation = []
         total_fits = sum([player.fitness for player in players])
         probabilities = {}
@@ -101,13 +91,18 @@ class Evolution:
             p.append(total_p)
             probabilities[i] = p
 
-        step = 1 / num_players
-        start_point = random.uniform(0, step)
-        pointers = [start_point + i * step for i in range(num_players)]
-        player = 0
+        if g_type == "rw":
+            pointers = [random.uniform(0, 1) for i in range(num_players)]
+        else:
+            step = 1 / num_players
+            start_point = random.uniform(0, step)
+            pointers = [start_point + i * step for i in range(num_players)]
+
+
         for p in pointers:
+            p = random.uniform(0, 1)
             for i in range(len(players)):
                 if probabilities[i][0] <= p < probabilities[i][1]:
-                    next_generation.append(players[i])
+                    next_generation.append(self.clone_player(players[i]))
                     break
-        return  next_generation
+        return next_generation
