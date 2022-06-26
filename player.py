@@ -9,6 +9,7 @@ from nn import NeuralNetwork
 class Player(pygame.sprite.Sprite):
     def __init__(self, game_mode):
         super().__init__()
+        self.layer_sizes = []
 
         # loading images
         player_walk1 = pygame.image.load('Graphics/Player/player_walk_1.png').convert_alpha()
@@ -36,8 +37,15 @@ class Player(pygame.sprite.Sprite):
         if self.game_mode == "Neuroevolution":
             self.fitness = 0  # Initial fitness
 
-            layer_sizes = [8, 10, 2]  # TODO (Design your architecture here by changing the values)
-            self.nn = NeuralNetwork(layer_sizes)
+            # input layer
+            # self.layer_sizes[0] must be even
+            self.layer_sizes.append(10)
+            # hidden layer
+            self.layer_sizes.append(32)
+            # output layer
+            self.layer_sizes.append(2)
+                # [8, 32, 2]  # TODO (Design your architecture here by changing the values)
+            self.nn = NeuralNetwork(self.layer_sizes)
 
 
 
@@ -48,7 +56,8 @@ class Player(pygame.sprite.Sprite):
         :return: created vector
         """
         input = []
-        for i in range(3):
+        # self.layer_sizes[0] must be even
+        for i in range(self.layer_sizes[0] // 2 - 1):
             try:
                 x = obstacles[i]['x']
                 y = obstacles[i]['y']
@@ -87,16 +96,14 @@ class Player(pygame.sprite.Sprite):
         # TODO (change player's gravity here by calling self.change_gravity)
 
         input = self.create_input(screen_width, screen_height, obstacles, player_x, player_y)
-
         output = self.nn.forward(np.array(input).reshape(len(input), 1))
 
         # Update gravity based of output of NN
-        if output[0] > 0.5:
+        i = np.argmax(output)
+        if i == 0:
             self.change_gravity('left')
-        elif output[1] > 0.5:
+        else:
             self.change_gravity('right')
-        # else:
-        #     self.change_gravity(self.player_gravity)
 
 
     def change_gravity(self, new_gravity):
