@@ -71,7 +71,7 @@ class Player(pygame.sprite.Sprite):
                     input.append(screen_height / 2)
             except:
                 input.append(screen_width / 2)
-                input.append(screen_width / 2)
+                input.append(screen_height / 2)
 
         input.append(player_x)
         input.append(player_y)
