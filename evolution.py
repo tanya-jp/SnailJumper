@@ -2,6 +2,7 @@ import copy
 
 from player import Player
 import numpy as np
+import random
 
 
 class Evolution:
@@ -19,11 +20,11 @@ class Evolution:
         # TODO (Implement top-k algorithm here)
         sorted_players = sorted(players, key=lambda player: player.fitness, reverse=True)
         # TODO (Additional: Implement roulette wheel here)
-        # self.roulette_wheel(players, num_players)
+        # self.roulette_wheel(sorted_players, num_players)
         # TODO (Additional: Implement SUS here)
-
+        self.sus(sorted_players, num_players)
         # TODO (Additional: Learning curve)
-        return players[: num_players]
+        return sorted_players[: num_players]
 
     def generate_new_population(self, num_players, prev_players=None):
         """
@@ -79,3 +80,36 @@ class Evolution:
         new_player.nn = copy.deepcopy(player.nn)
         new_player.fitness = player.fitness
         return new_player
+
+    def roulette_wheel(self, players, num_player):
+        next_generation = []
+        total_fits = sum([player.fitness for player in players])
+        probabilities = [player.fitness / total_fits for player in players]
+        for i in range(num_player):
+            chosen = np.random.choice(players, 1, p=probabilities)
+            next_generation.append(chosen)
+
+        return next_generation
+
+    def sus(self, players, num_players):
+        next_generation = []
+        total_fits = sum([player.fitness for player in players])
+        probabilities = {}
+        total_p = 0
+        for i in range(len(players)):
+            p = []
+            p.append(total_p)
+            total_p += players[i].fitness / total_fits
+            p.append(total_p)
+            probabilities[i] = p
+
+        step = 1 / num_players
+        start_point = random.uniform(0, step)
+        pointers = [start_point + i * step for i in range(num_players)]
+        player = 0
+        for p in pointers:
+            for i in range(len(players)):
+                if probabilities[i][0] <= p < probabilities[i][1]:
+                    next_generation.append(players[i])
+                    break
+        return  next_generation
