@@ -26,7 +26,7 @@ class Evolution:
         # TODO (Additional: Learning curve)
         # generated_players = self.q_tournament(sorted_players, num_players, 8)
 
-        self.save_fitness(players)
+        self.save_fitness(sorted_players)
 
         # print(sorted_players[0].fitness)
         return generated_players[: num_players]
@@ -128,7 +128,7 @@ class Evolution:
 
 
         for p in pointers:
-            p = random.uniform(0, 1)
+            # p = random.uniform(0, 1)
             for i in range(len(players)):
                 if probabilities[i][0] <= p < probabilities[i][1]:
                     next_generation.append(self.clone_player(players[i]))
@@ -151,10 +151,11 @@ class Evolution:
 
     def save_fitness(self, players):
         fitness = [player.fitness for player in players]
+        # print(fitness)
         best_fitness = players[0].fitness
         worst_fitness = players[len(players) - 1].fitness
         mean_fitness = sum(fitness) / len(fitness)
-        # print(sorted_players[0].fitness, sorted_players[len(sorted_players) - 1].fitness, mean_fitness)
+        print(players[0].fitness, players[len(players) - 1].fitness, mean_fitness)
         s = str(best_fitness) + " " + str(worst_fitness) + " " + str(mean_fitness)
         if not os.path.exists('fitness'):
             os.makedirs('fitness')
