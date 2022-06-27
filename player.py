@@ -39,9 +39,9 @@ class Player(pygame.sprite.Sprite):
 
             # input layer
             # self.layer_sizes[0] must be even
-            self.layer_sizes.append(8)
+            self.layer_sizes.append(6)
             # hidden layer
-            self.layer_sizes.append(32)
+            self.layer_sizes.append(20)
             # output layer
             self.layer_sizes.append(2)
                 # [8, 32, 2]  # TODO (Design your architecture here by changing the values)
@@ -55,30 +55,23 @@ class Player(pygame.sprite.Sprite):
         The size of input vector is 8.
         :return: created vector
         """
-        input = []
-        # self.layer_sizes[0] must be even
+        created_input = [player_x / screen_width, player_y / screen_height]
+
         for i in range(self.layer_sizes[0] // 2 - 1):
             try:
-                x = obstacles[i]['x']
                 y = obstacles[i]['y']
-                if -50 < x < screen_width:
-                    input.append(x)
+                x = obstacles[i]['x']
+                if y - 2 < player_y:
+                    created_input.append((screen_height - y) / screen_height)
+                    created_input.append(x / screen_width)
                 else:
-                    input.append(screen_width / 2)
-                if -50 < y < screen_height:
-                    input.append(y)
-                else:
-                    input.append(screen_height / 2)
+                    created_input.append(1)
+                    created_input.append(1)
             except:
-                input.append(screen_width / 2)
-                input.append(screen_height / 2)
+                created_input.append(1)
+                created_input.append(1)
 
-        input.append(player_x)
-        input.append(player_y)
-
-        input_norm = [float(i) / sum(input) for i in input]
-
-        return input_norm
+        return created_input
 
     def think(self, screen_width, screen_height, obstacles, player_x, player_y):
         """
@@ -99,11 +92,13 @@ class Player(pygame.sprite.Sprite):
         output = self.nn.forward(np.array(input).reshape(len(input), 1))
 
         # Update gravity based of output of NN
-        i = np.argmax(output)
-        if i == 0:
+        if output[0] > 0.5:
             self.change_gravity('left')
-        else:
+        elif output[1] > 0.5:
             self.change_gravity('right')
+        else:
+            self.change_gravity(self.player_gravity)
+
 
 
     def change_gravity(self, new_gravity):

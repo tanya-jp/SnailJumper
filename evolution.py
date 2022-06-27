@@ -3,6 +3,7 @@ import copy
 from player import Player
 import numpy as np
 import random
+import os
 
 
 class Evolution:
@@ -19,11 +20,13 @@ class Evolution:
         # TODO (Implement top-k algorithm here)
         sorted_players = sorted(players, key=lambda player: player.fitness, reverse=True)
         # TODO (Additional: Implement roulette wheel here)
-        generated_players = self.sus_rw(sorted_players, num_players, "rw")
+        # generated_players = self.sus_rw(sorted_players, num_players, "rw")
         # TODO (Additional: Implement SUS here)
-        # generated_players = self.sus_rw(sorted_players, num_players, "sus")
+        generated_players = self.sus_rw(sorted_players, num_players, "sus")
         # TODO (Additional: Learning curve)
-        # generated_players = self.q_tournament(sorted_players, num_players, 70)
+        # generated_players = self.q_tournament(sorted_players, num_players, 8)
+
+        self.save_fitness(players)
 
         # print(sorted_players[0].fitness)
         return generated_players[: num_players]
@@ -42,10 +45,12 @@ class Evolution:
             # TODO ( Parent selection and child generation )
             # new_players = prev_players  # DELETE THIS AFTER YOUR IMPLEMENTATION
             # new_players = self.crossover_players(prev_players)
-            new_players = self.sus_rw(prev_players, num_players, "sus")
-            # new_players = self.q_tournament(prev_players, num_players, 30)
+            # new_players = self.sus_rw(prev_players, num_players, "sus")
+            new_players = self.q_tournament(prev_players, num_players, 8)
             # new_players = self.sus_rw(prev_players, num_players, "rw")
             parents = self.crossover_players(new_players)
+            for child in parents:
+                self.mutate_player(child)
             # new_players = prev_players
             return parents
 
@@ -64,19 +69,34 @@ class Evolution:
             new_player1 = self.clone_player(prev_players1)
             new_player2 = self.clone_player(prev_players2)
 
-            for i in range(len(new_player1.nn.w)):
-                shape = new_player1.nn.w[i].shape
-                # weight
-                new_player1.nn.w[i][:, shape[1] // 2:] = prev_players2.nn.w[i][:, shape[1] // 2:]
-                new_player2.nn.w[i][:, shape[1] // 2:] = prev_players1.nn.w[i][:, shape[1] // 2:]
-                # bias
-                new_player1.nn.b[i][:, shape[1] // 2:] = prev_players2.nn.b[i][:, shape[1] // 2:]
-                new_player2.nn.b[i][:, shape[1] // 2:] = prev_players1.nn.b[i][:, shape[1] // 2:]
+            random_number = np.random.uniform(0, 1, 1)
+            if random_number > 0.5:
+
+                for i in range(len(new_player1.nn.w)):
+                    shape = new_player1.nn.w[i].shape
+                    # weight
+                    new_player1.nn.w[i][:, shape[1] // 2:] = prev_players2.nn.w[i][:, shape[1] // 2:]
+                    new_player2.nn.w[i][:, shape[1] // 2:] = prev_players1.nn.w[i][:, shape[1] // 2:]
+                    # bias
+                    new_player1.nn.b[i][:, shape[1] // 2:] = prev_players2.nn.b[i][:, shape[1] // 2:]
+                    new_player2.nn.b[i][:, shape[1] // 2:] = prev_players1.nn.b[i][:, shape[1] // 2:]
 
             new_players.append(new_player1)
             new_players.append(new_player2)
 
         return new_players
+
+    def mutate_player(self, child):
+        mutation_threshold = 0.2
+        center = 0
+        margin = 0.3
+
+        for i in range(len(child.nn.w)):
+            if np.random.random_sample() >= mutation_threshold:
+                child.nn.w[i] += np.random.normal(center, margin, size=(child.nn.w[i].shape))
+            if np.random.random_sample() >= mutation_threshold:
+                child.nn.b[i] += np.random.normal(center, margin, size=(child.nn.b[i].shape))
+
 
     def clone_player(self, player):
         """
@@ -128,3 +148,18 @@ class Evolution:
 
 
         return next_generation
+
+    def save_fitness(self, players):
+        fitness = [player.fitness for player in players]
+        best_fitness = players[0].fitness
+        worst_fitness = players[len(players) - 1].fitness
+        mean_fitness = sum(fitness) / len(fitness)
+        # print(sorted_players[0].fitness, sorted_players[len(sorted_players) - 1].fitness, mean_fitness)
+        s = str(best_fitness) + " " + str(worst_fitness) + " " + str(mean_fitness)
+        if not os.path.exists('fitness'):
+            os.makedirs('fitness')
+
+        f = open("fitness/output1.txt", "a")
+        f.write(s)
+        f.write("\n")
+        f.close()
